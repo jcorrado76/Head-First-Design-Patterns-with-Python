@@ -10,6 +10,9 @@ def is_proper_fly_behavior(flyBehavior):
 
 class Duck(ABC):
     def __init__(self):
+        # this is unecessary since we necessarily must do this in the derived
+        # class constructor. Even if we set something here, it will be overriden
+        # in the derived class __init__ method.
         self.flyBehavior = FlyBehavior()
         self.quackBehavior = QuackBehavior()
 
@@ -19,8 +22,7 @@ class Duck(ABC):
 
     # we're hiding implementation details of quack from the user, while
     # delegating it to the QuackBehavior interface. The user only need worry
-    # about remembering that quack() is invoked by calling performQuack() on any
-    # duck
+    # about remembering that every duck exposes a performQuack() method
     def performQuack(self):
         assert is_proper_quack_behavior(self.quackBehavior),\
             "self.quackBehavior must be set to an instance of a class that inherits from the QuackBehavior interface"
@@ -46,6 +48,9 @@ class Duck(ABC):
     def display(self):
         pass
 
+# NOTE: all of these duck classes possess self.performFly and
+# self.performQuack methods, even though they're hidden and implemented
+# elsewhere
 class MallardDuck(Duck):
     def __init__(self):
         self.quackBehavior = Quack()

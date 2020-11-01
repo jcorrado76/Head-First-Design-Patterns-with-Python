@@ -1,6 +1,7 @@
+= Implementation of Duck Classes under the Strategy Design =
 Suppose we need to add a new feature to our implementation of Ducks.
 Naively, we could add a `fly()` method in the `Duck` class, and have all subsequently created ducks inherit the new method.
-What happens when we create a `RubberDuck` class. Does this class share the same _kind_ of `fly` as `MallardDuck`?
+What happens when we create a `RubberDuck` class? Does this class share the same _kind_ of `fly` as `MallardDuck`?
 No, it doesn't. 
 Not all ducks should be able to fly. You will mostly feel the cost of this issue when it comes to code reuse and maintenance on the product.
 *Every time* you create a new duck class that shouldn't fly or quack, you'll need to override those methods in the derived classes.
@@ -17,15 +18,20 @@ Pull these methods out of the `Duck` class, and create a new set of classes to r
 So we'll create a new class for each variation of the `fly` behavior, and a new class for each variation of the `quack` behavior.
 
 What about creating a single class for the `fly` behavior, and a single class for the `quack` behavior, and just putting all variations as different methods inside those classes?
+
 Pros:
+
 * all your methods are centralized, and encapsulated in the same class - easier to track down and change functionality
 * you don't need to manage multiple classes
+
 Cons:
+
 * you want to be able to call the same method in each new derived duck class. You don't want to call different identifiers `FlyWithWings()`, `FlyNoWay` in your derived classes (remember, these are supposed to implement the _same_ feature/functionality). You want to just call something like `fly()` in all your derived classes (consistent API - easier to use, and your duck classes don't need to know anything about the implementation details for their own behaviors).
-* each new derived duck class now has a whole bunch of methods exposed to it that provide redundant functionality and won't ever be used (this isn't important for our trivial example of ducks, but what if the feature we're trying to refactor is something sensitive, like loading proprietary data from different sources? You don't want that data to just be exposed to every derived instance)
+* each new derived duck class now has a whole bunch of methods exposed to it that provide redundant functionality and won't ever be used (this isn't important for our trivial example of ducks, but what if the feature we're trying to refactor is something sensitive, like loading proprietary data from different sources? You don't want that data to just be exposed to every derived instance where it won't be needed)
 
 To solve this, let's apply another design principle:
 *Program to an interface, not an implementation*
+
 Use an interface to represent each behavior:
 * `FlyBehavior`
 * `QuackBehavior`
@@ -56,7 +62,7 @@ We'd like to restrict the user to select an appropriate quack behavior, and an a
 I did this by adding an `assert isinstance` inside the `performFly` methods in the abstract base class.
 This way, it's all handled between the `Duck` abstract base class, and the abstract interface base classes.
 Any new developers or users of the duck subclasses now no longer need to worry about implementation details or anything.
-All they do is respect the API exposed by the abstract base behavior interface classes.
+All they need to do is respect the API exposed by the `Duck` abstract base class.
 
 
 Now, since we have this powerful abstraction for how to set and encapsulate certain sets of behaviors under interface classes, we can extract additional value from this framework by adding the capability of setting the behavior dynamically.
@@ -65,7 +71,7 @@ We'll do this by adding a `setFlyBehavior` method, and another for the quack beh
 Be careful to do the type checking manually as we did above when instantiating the member variable, as python does not do this for you automatically the way C++ does when you declare you variable of a certain type.
 
 In a sense, setting the `flyBehavior` and `quackBehavior` members inside the `__init__` in the `Duck` abstract base class doesn't actually do anything since we're in python.
-You can just change it to be whatever you want at any point in time, since it's dynamically typed.
+You can just change it to be whatever you want at any point in time, since it's dynamically typed. I will choose to leave those lines in there so it's clear what you would need to do if you were in a statically typed language.
 
 Let's test this new functionality by adding a new duck variation, called `ModelDuck`, and a new flight behavior type `FlyRocketPowered`.
 Our `ModelDuck` is going to start off unable to fly. But then, we'll add a rocket to it during runtime so that it can fly!
@@ -94,7 +100,7 @@ This leads to the final design principle of this example:
 Using composition to create systems allows us more flexibility - we can encapsulate a family of algorithms into their own set of classes, and it allows us to *change behavior at runtime* (as long as our "behavior" interface is the right interface for the task at hand).
 
 What if you wanted to create a new system that implemented a *duck call*? In other words, it mimics the quacks of ducks, but it isn't a `Duck`, and therefore doesn't inherit from `Duck`.
-As a result of the de-coupled composition technique we used to implement the quack behavior, we just need to pass an instance of the appropriate quack behavior to our duck call class, function or whatever system you use to implement it.
+As a result of the relatively de-coupled composition technique (relative to inheritance) we used to implement the quack behavior, we just need to pass an instance of the appropriate quack behavior to our duck call class, function or whatever system you use to implement it.
 
 This pattern is called the *Strategy* pattern:
 You have a family of algorithms (`Quack`, `NoQuack`, `Squeak`, etc.), and you want them to be encapsulated and treat them as interchangeable.
